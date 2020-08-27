@@ -16,9 +16,13 @@ echo $TEST_RESULT_FILE_DIR > $TEST_RESULT_FILE_DIR_FILE
 aws s3 --quiet --region us-east-1 cp s3://ci-secret-stash/prod/signinwidget/export-test-credentials.sh $OKTA_HOME/$REPO/scripts/export-test-credentials.sh
 source $OKTA_HOME/$REPO/scripts/export-test-credentials.sh
 
+yarn build:release && yarn start:react && yarn start:angular
+
 sh ./scripts/start-sauce-connect.sh
 
-if ! yarn test:e2e:windows; then
+export SAUCE_PLATFORM_NAME=windows
+
+if ! yarn grunt test-e2e; then
   echo "e2e windows saucelabs tests failed! Exiting..."
   exit ${PUBLISH_TYPE_AND_RESULT_DIR_BUT_ALWAYS_FAIL}
 fi

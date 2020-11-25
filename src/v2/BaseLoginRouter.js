@@ -105,7 +105,7 @@ export default Router.extend({
   },
 
   handleIdxResponseSuccess (idxResponse) {
-    if (idxResponse.hasInteractionCode && idxResponse.hasInteractionCode()) {
+    if (typeof idxResponse.hasInteractionCode === 'function' && idxResponse.hasInteractionCode()) {
       idxResponse.exchangeCode()
         .then(tokens => {
           this.settings.callGlobalSuccess({ tokens });

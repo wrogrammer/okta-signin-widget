@@ -32,11 +32,21 @@ import AppState from './models/AppState';
 import idx from 'idx';
 
 
-const introspectStateToken = (settings) => {
+const introspect = (settings) => {
+  const clientId = settings.get('clientId');
   const domain = settings.get('baseUrl');
+  const scopes = settings.get('scopes');
   const stateHandle = settings.get('stateToken');
+  const redirectUri = settings.get('redirectUri');
   const version = settings.get('apiVersion');
-  return idx.start({ domain, stateHandle, version });
+  
+  if (settings.get('useInteractionCodeFlow')) {
+    return idx.start({ clientId, domain, scopes, stateHandle, redirectUri, version });
+  } else if (stateHandle) {
+    return idx.start({ domain, stateHandle, version });
+  } else {
+    throw new Errors.ConfigError('Set "useInteractionCodeFlow" to true in configuration to enable the "interaction_code" flow.');
+  }
 };
 
 const handleProxyIdxResponse = (settings) => {
@@ -95,6 +105,13 @@ export default Router.extend({
   },
 
   handleIdxResponseSuccess (idxResponse) {
+    if (idxResponse.hasInteractionCode && idxResponse.hasInteractionCode()) {
+      idxResponse.exchangeCode()
+        .then(tokens => {
+          this.settings.callGlobalSuccess({ tokens });
+        });
+    }
+
     // transform response
     const ionResponse = _.compose(
       i18nTransformer,
@@ -162,9 +179,11 @@ export default Router.extend({
     // introspect stateToken when widget is bootstrap with state token
     // and remove it from `settings` afterwards as IDX response always has
     // state token (which will be set into AppState)
-    if (this.settings.get('stateToken') || this.settings.get('proxyIdxResponse')) {
+    if (this.settings.get('stateToken') 
+        || this.settings.get('proxyIdxResponse')
+        || this.settings.get('useInteractionCodeFlow')) {
       const idxRespPromise = this.settings.get('proxyIdxResponse') ?
-        handleProxyIdxResponse(this.settings) : introspectStateToken(this.settings);
+        handleProxyIdxResponse(this.settings) : introspect(this.settings);
       return idxRespPromise
         .then(idxResp => {
           this.settings.unset('stateToken');

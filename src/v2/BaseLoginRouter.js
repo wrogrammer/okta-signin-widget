@@ -40,10 +40,10 @@ const introspect = (settings) => {
   const redirectUri = settings.get('redirectUri');
   const version = settings.get('apiVersion');
   
-  if (settings.get('useInteractionCodeFlow')) {
-    return idx.start({ clientId, domain, scopes, stateHandle, redirectUri, version });
-  } else if (stateHandle) {
+  if (stateHandle) {
     return idx.start({ domain, stateHandle, version });
+  } else if (settings.get('useInteractionCodeFlow')) {
+    return idx.start({ clientId, domain, scopes, stateHandle, redirectUri, version });
   } else {
     throw new Errors.ConfigError('Set "useInteractionCodeFlow" to true in configuration to enable the "interaction_code" flow.');
   }

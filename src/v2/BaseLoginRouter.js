@@ -31,21 +31,35 @@ import i18nTransformer from './ion/i18nTransformer';
 import AppState from './models/AppState';
 import idx from 'idx';
 
-
-const introspect = (settings) => {
+const startLoginFlow = (settings) => {
   const clientId = settings.get('clientId');
   const domain = settings.get('baseUrl');
   const scopes = settings.get('scopes');
   const stateHandle = settings.get('stateToken');
   const redirectUri = settings.get('redirectUri');
   const version = settings.get('apiVersion');
+
+  const interact = () => {
+    return idx.start({ 
+      clientId, 
+      issuer: domain + '/oauth2/default', 
+      scopes, 
+      stateHandle, 
+      redirectUri, 
+      version 
+    });
+  };
+
+  const introspect = () => {
+    return idx.start({ domain, stateHandle, version });
+  };
   
   if (stateHandle) {
-    return idx.start({ domain, stateHandle, version });
+    return introspect();
   } else if (settings.get('useInteractionCodeFlow')) {
-    return idx.start({ clientId, domain, scopes, stateHandle, redirectUri, version });
+    return interact();
   } else {
-    throw new Errors.ConfigError('Set "useInteractionCodeFlow" to true in configuration to enable the "interaction_code" flow.');
+    throw new Errors.ConfigError('Set "useInteractionCodeFlow" to true in configuration to enable the "interaction_code" flow for self-hosted widget.');
   }
 };
 
@@ -183,16 +197,18 @@ export default Router.extend({
         || this.settings.get('proxyIdxResponse')
         || this.settings.get('useInteractionCodeFlow')) {
       const idxRespPromise = this.settings.get('proxyIdxResponse') ?
-        handleProxyIdxResponse(this.settings) : introspect(this.settings);
+        handleProxyIdxResponse(this.settings) : startLoginFlow(this.settings);
       return idxRespPromise
         .then(idxResp => {
           this.settings.unset('stateToken');
           this.settings.unset('proxyIdxResponse');
+          this.settings.unset('useInteractionCodeFlow');
           this.appState.trigger('remediationSuccess', idxResp);
           this.render(Controller, options);
         })
         .catch(errorResp => {
           this.settings.unset('stateToken');
+          this.settings.unset('useInteractionCodeFlow');
           this.appState.trigger('remediationError', errorResp.error);
           this.render(Controller, options);
         });

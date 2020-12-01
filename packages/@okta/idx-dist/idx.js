@@ -7574,20 +7574,20 @@ function () {
   var _bootstrap = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee(_ref) {
-    var clientId, issuer, _ref$scopes, scopes, redirectUri, codeChallenge, state, target, body;
+    var clientId, issuer, _ref$scopes, scopes, redirectUri, codeChallenge, codeChallengeMethod, state, target, body;
 
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            clientId = _ref.clientId, issuer = _ref.issuer, _ref$scopes = _ref.scopes, scopes = _ref$scopes === void 0 ? ['openid', 'email'] : _ref$scopes, redirectUri = _ref.redirectUri, codeChallenge = _ref.codeChallenge, state = _ref.state;
+            clientId = _ref.clientId, issuer = _ref.issuer, _ref$scopes = _ref.scopes, scopes = _ref$scopes === void 0 ? ['openid', 'email'] : _ref$scopes, redirectUri = _ref.redirectUri, codeChallenge = _ref.codeChallenge, codeChallengeMethod = _ref.codeChallengeMethod, state = _ref.state;
             target = "".concat(issuer, "/v1/interact");
             body = Object.entries({
               client_id: clientId,
               scope: scopes.join(' '),
               redirect_uri: redirectUri,
               code_challenge: codeChallenge,
-              code_challenge_method: 'S256',
+              code_challenge_method: codeChallengeMethod,
               state: state
             }).map(function (_ref2) {
               var _ref3 = _slicedToArray(_ref2, 2),
@@ -7601,7 +7601,6 @@ function () {
               headers: {
                 'content-type': 'application/x-www-form-urlencoded'
               },
-              // body: `client_id=${encodeURIComponent(clientId)}&scope=${encodeURIComponent(scope)}`,
               body: body
             }).then(function (response) {
               return response.ok ? response.json() : parseAndReject(response);
@@ -7657,14 +7656,18 @@ function () {
   var _start = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee(_ref) {
-    var clientId, domain, issuer, stateHandle, version, redirectUri, state, scopes, interactionHandle, toPersist, cleanVersion, _pkce$makeCodePair, codeChallenge, codeVerifier, interaction_handle, _parsersForVersion, makeIdxState, idxResponse, idxState;
+    var clientId, domain, issuer, stateHandle, version, redirectUri, state, scopes, interactionHandle, toPersist, cleanVersion, _ref2, codeChallenge, codeChallengeMethod, codeVerifier, bootstrapParams, interaction_handle, _parsersForVersion, makeIdxState, idxResponse, idxState;
 
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
             clientId = _ref.clientId, domain = _ref.domain, issuer = _ref.issuer, stateHandle = _ref.stateHandle, version = _ref.version, redirectUri = _ref.redirectUri, state = _ref.state, scopes = _ref.scopes;
-            toPersist = {};
+            toPersist = {
+              issuer: issuer,
+              clientId: clientId,
+              state: state
+            };
 
             if (!(!domain && !issuer)) {
               _context.next = 4;
@@ -7723,42 +7726,50 @@ function () {
 
           case 14:
             if (stateHandle) {
-              _context.next = 29;
+              _context.next = 34;
               break;
             }
 
             _context.prev = 15;
-            _pkce$makeCodePair = _pkce__WEBPACK_IMPORTED_MODULE_2__["default"].makeCodePair(), codeChallenge = _pkce$makeCodePair.codeChallenge, codeVerifier = _pkce$makeCodePair.codeVerifier;
-            toPersist.codeChallenge = codeChallenge;
+            _context.next = 18;
+            return _pkce__WEBPACK_IMPORTED_MODULE_2__["default"].makeCode();
+
+          case 18:
+            _ref2 = _context.sent;
+            codeChallenge = _ref2.codeChallenge;
+            codeChallengeMethod = _ref2.codeChallengeMethod;
+            codeVerifier = _ref2.codeVerifier;
             toPersist.codeVerifier = codeVerifier;
-            _context.next = 21;
-            return Object(_bootstrap__WEBPACK_IMPORTED_MODULE_1__["default"])({
+            bootstrapParams = {
               clientId: clientId,
               issuer: issuer,
               scopes: scopes,
               redirectUri: redirectUri,
               codeChallenge: codeChallenge,
+              codeChallengeMethod: codeChallengeMethod,
               state: state
-            });
+            };
+            _context.next = 26;
+            return Object(_bootstrap__WEBPACK_IMPORTED_MODULE_1__["default"])(bootstrapParams);
 
-          case 21:
+          case 26:
             interaction_handle = _context.sent;
             interactionHandle = interaction_handle;
             toPersist.interactionHandle = interactionHandle;
-            _context.next = 29;
+            _context.next = 34;
             break;
 
-          case 26:
-            _context.prev = 26;
+          case 31:
+            _context.prev = 31;
             _context.t0 = _context["catch"](15);
             return _context.abrupt("return", Promise.reject({
               error: _context.t0
             }));
 
-          case 29:
-            _context.prev = 29;
+          case 34:
+            _context.prev = 34;
             _parsersForVersion = Object(_parsers__WEBPACK_IMPORTED_MODULE_3__["default"])(version), makeIdxState = _parsersForVersion.makeIdxState;
-            _context.next = 33;
+            _context.next = 38;
             return Object(_introspect__WEBPACK_IMPORTED_MODULE_0__["default"])({
               domain: domain,
               interactionHandle: interactionHandle,
@@ -7771,24 +7782,24 @@ function () {
               });
             });
 
-          case 33:
+          case 38:
             idxResponse = _context.sent;
             idxState = makeIdxState(idxResponse, toPersist);
             return _context.abrupt("return", idxState);
 
-          case 38:
-            _context.prev = 38;
-            _context.t1 = _context["catch"](29);
+          case 43:
+            _context.prev = 43;
+            _context.t1 = _context["catch"](34);
             return _context.abrupt("return", Promise.reject({
               error: _context.t1
             }));
 
-          case 41:
+          case 46:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[15, 26], [29, 38]]);
+    }, _callee, null, [[15, 31], [34, 43]]);
   }));
 
   function start(_x) {
@@ -7909,42 +7920,131 @@ var parsersForVersion = function parsersForVersion(version) {
 /*!*********************!*\
   !*** ./src/pkce.js ***!
   \*********************/
-/*! exports provided: default */
+/*! exports provided: makeCode, default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "makeCode", function() { return makeCode; });
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
 // Code verifier: Random URL-safe string with a minimum length of 43 characters.
 // Code challenge: Base64 URL-encoded SHA-256 hash of the code verifier.
-// var MIN_VERIFIER_LENGTH = 43;
-// var MAX_VERIFIER_LENGTH = 128;
-// var DEFAULT_CODE_CHALLENGE_METHOD = 'S256';
-// function dec2hex (dec) {
-//   return ('0' + dec.toString(16)).substr(-2);
-// }
-// function getRandomString(length) {
-//   var a = new Uint8Array(Math.ceil(length / 2));
-//   crypto.getRandomValues(a);
-//   var str = Array.from(a, dec2hex).join('');
-//   return str.slice(0, length);
-// }
-// function generateVerifier(prefix) {
-//   var verifier = prefix || '';
-//   if (verifier.length < MIN_VERIFIER_LENGTH) {
-//     verifier = verifier + getRandomString(MIN_VERIFIER_LENGTH - verifier.length);
-//   }
-//   return encodeURIComponent(verifier).slice(0, MAX_VERIFIER_LENGTH);
-// }
-var makeCodePair = function makeCodePair() {
-  return {
-    codeChallenge: 'FAKE_PKCE_HASH',
-    //FIXME
-    codeVerifier: 'FAKE_PKCE_STRING'
-  };
-};
+var MIN_VERIFIER_LENGTH = 43;
+var MAX_VERIFIER_LENGTH = 128;
+var DEFAULT_CODE_CHALLENGE_METHOD = 'S256';
+var CODE_CHALLENGE_ALGORITHM = {
+  S256: 'SHA-256'
+}; // converts a standard base64-encoded string to a "url/filename safe" variant
 
+function base64ToBase64Url(b64) {
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+} // converts a string to base64 (url/filename safe variant)
+
+
+function stringToBase64Url(str) {
+  var b64 = btoa(str);
+  return base64ToBase64Url(b64);
+}
+
+function dec2hex(dec) {
+  return ('0' + dec.toString(16)).substr(-2);
+}
+
+function getRandomString(length) {
+  var a = new Uint8Array(Math.ceil(length / 2));
+  crypto.getRandomValues(a);
+  var str = Array.from(a, dec2hex).join('');
+  return str.slice(0, length);
+}
+
+function generateVerifier(prefix) {
+  var verifier = prefix || '';
+
+  if (verifier.length < MIN_VERIFIER_LENGTH) {
+    verifier = verifier + getRandomString(MIN_VERIFIER_LENGTH - verifier.length);
+  }
+
+  return encodeURIComponent(verifier).slice(0, MAX_VERIFIER_LENGTH);
+}
+
+function computeChallenge(_x) {
+  return _computeChallenge.apply(this, arguments);
+}
+
+function _computeChallenge() {
+  _computeChallenge = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee2(str) {
+    var codeChallengeMethod,
+        buffer,
+        algorithm,
+        _args2 = arguments;
+    return regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            codeChallengeMethod = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : DEFAULT_CODE_CHALLENGE_METHOD;
+            buffer = new TextEncoder().encode(str);
+            algorithm = CODE_CHALLENGE_ALGORITHM[codeChallengeMethod];
+            return _context2.abrupt("return", crypto.subtle.digest(algorithm, buffer).then(function (arrayBuffer) {
+              var hash = String.fromCharCode.apply(null, new Uint8Array(arrayBuffer));
+              var b64u = stringToBase64Url(hash); // url-safe base64 variant
+
+              return b64u;
+            }));
+
+          case 4:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2);
+  }));
+  return _computeChallenge.apply(this, arguments);
+}
+
+var makeCode =
+/*#__PURE__*/
+function () {
+  var _makeCode = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee() {
+    var codeVerifier, codeChallenge;
+    return regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            codeVerifier = generateVerifier();
+            _context.next = 3;
+            return computeChallenge(codeVerifier);
+
+          case 3:
+            codeChallenge = _context.sent;
+            return _context.abrupt("return", {
+              codeChallenge: codeChallenge,
+              codeVerifier: codeVerifier,
+              codeChallengeMethod: DEFAULT_CODE_CHALLENGE_METHOD
+            });
+
+          case 5:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee);
+  }));
+
+  function makeCode() {
+    return _makeCode.apply(this, arguments);
+  }
+
+  return makeCode;
+}();
 /* harmony default export */ __webpack_exports__["default"] = ({
-  makeCodePair: makeCodePair
+  makeCode: makeCode
 });
 
 /***/ }),
@@ -8362,6 +8462,65 @@ var parseIdxResponse = function parseIdxResponse(idxResponse) {
 
 /***/ }),
 
+/***/ "./src/v1/interactionCode.js":
+/*!***********************************!*\
+  !*** ./src/v1/interactionCode.js ***!
+  \***********************************/
+/*! exports provided: exchangeCodeForTokens */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "exchangeCodeForTokens", function() { return exchangeCodeForTokens; });
+/* harmony import */ var cross_fetch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! cross-fetch */ "./node_modules/cross-fetch/dist/browser-ponyfill.js");
+/* harmony import */ var cross_fetch__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cross_fetch__WEBPACK_IMPORTED_MODULE_0__);
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+
+
+var parseAndReject = function parseAndReject(response) {
+  return response.json().then(function (err) {
+    return Promise.reject(err);
+  });
+};
+
+var exchangeCodeForTokens = function exchangeCodeForTokens(_ref) {
+  var interactionCode = _ref.interactionCode,
+      clientId = _ref.clientId,
+      issuer = _ref.issuer,
+      codeVerifier = _ref.codeVerifier;
+  var tokenUrl = "".concat(issuer, "/v1/token");
+  var body = Object.entries({
+    client_id: clientId,
+    code_verifier: codeVerifier,
+    grant_type: 'interaction_code',
+    interaction_code: interactionCode
+  }).map(function (_ref2) {
+    var _ref3 = _slicedToArray(_ref2, 2),
+        param = _ref3[0],
+        value = _ref3[1];
+
+    return "".concat(param, "=").concat(encodeURIComponent(value));
+  }).join('&');
+  return cross_fetch__WEBPACK_IMPORTED_MODULE_0___default()(tokenUrl, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded'
+    },
+    body: body
+  }).then(function (response) {
+    return response.ok ? response.json() : parseAndReject(response);
+  });
+};
+
+/***/ }),
+
 /***/ "./src/v1/makeIdxState.js":
 /*!********************************!*\
   !*** ./src/v1/makeIdxState.js ***!
@@ -8372,6 +8531,7 @@ var parseIdxResponse = function parseIdxResponse(idxResponse) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _idxResponseParser__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./idxResponseParser */ "./src/v1/idxResponseParser.js");
+/* harmony import */ var _interactionCode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./interactionCode */ "./src/v1/interactionCode.js");
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
@@ -8389,6 +8549,7 @@ function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread n
 function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
 
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 
 
 
@@ -8460,13 +8621,23 @@ var makeIdxState = function makeIdxState(idxResponse, toPersist) {
     var _exchangeCode = _asyncToGenerator(
     /*#__PURE__*/
     regeneratorRuntime.mark(function _callee2() {
+      var findCode, interactionCode;
       return regeneratorRuntime.wrap(function _callee2$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
-              return _context2.abrupt("return", {});
+              // Currently ignoring the ION response, since it currently lies (about PKCE, etc)
+              // Ultimately we should switch to parsing it as an ION action
+              findCode = function findCode(item) {
+                return item.name === 'interaction_code';
+              };
 
-            case 1:
+              interactionCode = rawIdxResponse.successWithInteractionCode.value.find(findCode).value;
+              return _context2.abrupt("return", Object(_interactionCode__WEBPACK_IMPORTED_MODULE_1__["exchangeCodeForTokens"])(_objectSpread({}, toPersist, {
+                interactionCode: interactionCode
+              })));
+
+            case 3:
             case "end":
               return _context2.stop();
           }

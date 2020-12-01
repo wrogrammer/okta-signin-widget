@@ -120,9 +120,12 @@ export default Router.extend({
 
   handleIdxResponseSuccess (idxResponse) {
     if (typeof idxResponse.hasInteractionCode === 'function' && idxResponse.hasInteractionCode()) {
-      idxResponse.exchangeCode()
+      return idxResponse.exchangeCode()
         .then(tokens => {
-          this.settings.callGlobalSuccess({ tokens });
+          this.settings.callGlobalSuccess(Enums.SUCCESS, { tokens });
+        })
+        .catch(err => {
+          this.settings.callGlobalError(err);
         });
     }
 

@@ -59,7 +59,8 @@ const startLoginFlow = (settings) => {
   } else if (settings.get('useInteractionCodeFlow')) {
     return interact();
   } else {
-    throw new Errors.ConfigError('Set "useInteractionCodeFlow" to true in configuration to enable the "interaction_code" flow for self-hosted widget.');
+    throw new Errors.ConfigError('Set "useInteractionCodeFlow" to true in configuration to enable the '+ 
+    'interaction_code" flow for self-hosted widget.');
   }
 };
 

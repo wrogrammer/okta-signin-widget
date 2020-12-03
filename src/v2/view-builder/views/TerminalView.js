@@ -30,6 +30,8 @@ const Body = BaseForm.extend({
         .forEach(messagesObj => {
           const msg = messagesObj.message;
           if (messagesObj.class === 'ERROR' || messagesObj.i18n?.key === RETURN_LINK_EXPIRED_KEY) {
+            // To support intentional hard refresh in case of terminal states, clear sessionStorage to initiate a new login flow
+            sessionStorage.clear();
             this.add(createCallout({
               content: msg,
               type: 'error',

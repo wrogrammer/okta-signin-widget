@@ -95,6 +95,11 @@ export default Router.extend({
   },
 
   handleIdxResponseSuccess (idxResponse) {
+    //On success flush sessionStorage, 'success' object in remediation signifies end of login flow
+    if(idxResponse.rawIdxState.success || idxResponse.rawIdxState.successWithInteractionCode) {
+      sessionStorage.clear();
+    }
+
     // transform response
     const ionResponse = _.compose(
       i18nTransformer,

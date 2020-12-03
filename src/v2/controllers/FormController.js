@@ -109,6 +109,10 @@ export default Controller.extend({
   },
 
   handleInvokeAction (actionPath = '') {
+    if(actionPath === 'cancel') {
+      sessionStorage.clear();
+    }
+
     const idx = this.options.appState.get('idx');
     if (idx['neededToProceed'].find(item => item.name === actionPath)) {
       idx.proceed(actionPath, {})
@@ -167,6 +171,10 @@ export default Controller.extend({
   },
 
   showFormErrors (model, error) {
+    // If errors are terminal errors, then clear session storage, so that intentional hard refersh initiate a new loginflow
+    if(error.messages) {
+      sessionStorage.clear();
+    }
     model.trigger('clearFormError');
     if (!error) {
       error = 'FormController - unknown error found';
